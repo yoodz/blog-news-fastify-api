@@ -43,7 +43,6 @@ async function parserFeedUrl(validUrls, inXDay = 1, app) {
         const articles = await app.mongo.db.collection('article').find({ rssUrl: url }).project({
             link: 1,           // 包含 url 字段
         }).toArray();
-        console.log(articles, 'feedUtil-42')
         const currentResut = []
         try {
             let feed = await parser.parseURL(url);

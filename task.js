@@ -1,6 +1,21 @@
 const parserFeedUrl = require('./utils/feedUtil');
 const dayjs = require('dayjs');
 
+
+async function triggerDeploy() {
+  try {
+    const fetch = (await import('node-fetch')).default;
+    const res = await fetch(process.env.CLOUDFLARE_URL, {
+      method: 'POST'
+    });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const data = await res.json();
+    console.log('触发部署成功:', data);
+  } catch (err) {
+    console.error('触发部署失败:', err);
+  }
+}
+
 const Tasks = async (app) => {
     const rssUrl = await app.mongo.db.collection('rss').find({ deleted: 0, auditStatus: 1, init: 1 }).toArray();
 
@@ -10,7 +25,6 @@ const Tasks = async (app) => {
     }
 
     const validUrls = rssUrl?.map(item => item.rssUrl) || []
-    console.log(validUrls, 'task-13')
     const { result, requsetStatus } = await parserFeedUrl(validUrls, 5, app)
     for (let index = 0; index < requsetStatus.length; index++) {
         const element = requsetStatus[index];
@@ -31,6 +45,7 @@ const Tasks = async (app) => {
         }
     }
     await app.mongo.db.collection('config').updateOne({ key: "update_at" }, { $set: { value: dayjs().format('YYYY-MM-DD HH:mm') } })
-
+    triggerDeploy();
 }
 module.exports = Tasks;
+module.exports.triggerDeploy = triggerDeploy;

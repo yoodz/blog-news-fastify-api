@@ -1,4 +1,5 @@
 'use strict'
+const {triggerDeploy} = require('../task');
 
 module.exports = async function (fastify, opts) {
 
@@ -24,5 +25,9 @@ module.exports = async function (fastify, opts) {
       fastify.log.error('查询活跃用户错误:', error)
       return reply.code(500).send({ error: '查询失败' })
     }
+  })
+
+  fastify.get('/triggerDeploy', async function (request, reply) {
+    triggerDeploy()
   })
 }
