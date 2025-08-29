@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-    tags:
-      - "v*"
 
 jobs:
   build:
@@ -24,25 +22,9 @@ jobs:
           username: ${{ secrets.ALIYUN_USERNAME }}
           password: ${{ secrets.ALIYUN_PASSWORD }}
 
-      # 构建 Docker 镜像
-      - name: Build Docker Image
+      # 构建并推送 Docker 镜像（latest）
+      - name: Build and Push Docker Image
         run: |
-          IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ secrets.ALIYUN_REPO }}
-          TAG=${GITHUB_SHA::7}
-          echo "IMAGE=$IMAGE:$TAG"
-          docker build -t $IMAGE:$TAG .
-
-      # 推送到阿里云
-      - name: Push Docker Image
-        run: |
-          IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ secrets.ALIYUN_REPO }}
-          TAG=${GITHUB_SHA::7}
-          docker push $IMAGE:$TAG
-
-      # （可选）打 latest 标签
-      - name: Push latest tag
-        if: startsWith(github.ref, 'refs/heads/main')
-        run: |
-          IMAGE=${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ secrets.ALIYUN_REPO }}
-          docker tag $IMAGE:${GITHUB_SHA::7} $IMAGE:latest
+          IMAGE=${{ secrets.ALIYUN_REGISTRY }}/reuben_home/blog-news-apis
+          docker build -t $IMAGE:latest .
           docker push $IMAGE:latest
