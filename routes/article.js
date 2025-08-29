@@ -28,7 +28,7 @@ module.exports = async function (fastify, opts) {
   })
 
 
-  fastify.get('/triggerDeploy', async function (request, reply) {
-    task()
+  fastify.get('/task', async function (request, reply) {
+    task(fastify)
   })
 }
