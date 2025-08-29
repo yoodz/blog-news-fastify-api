@@ -1,36 +1,18 @@
-# 构建阶段
-FROM node:18-alpine AS builder
+# 使用官方 Node.js 轻量版镜像
+FROM node:20-alpine AS runner
 
+ENV NODE_ENV=production
 WORKDIR /app
+
+# 拷贝依赖文件，先装依赖（利用缓存）
 COPY package*.json ./
-RUN npm config set registry https://registry.npmmirror.com && \
-    npm ci --only=production --ignore-scripts
+RUN npm ci --omit=dev
 
-# 生产阶段
-FROM node:18-alpine
+# 拷贝源码
+COPY . .
 
-# 安装 PM2
-RUN npm install -g pm2 && \
-    apk add --no-cache tzdata && \
-    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    echo "Asia/Shanghai" > /etc/timezone
-
-WORKDIR /app
-
-# 创建非root用户
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S -u 1001 -G nodejs nodejs
-
-# 复制 node_modules 和应用代码
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --chown=nodejs:nodejs . .
-
-# 复制 PM2 配置文件
-COPY ecosystem.config.js .
-
-USER nodejs
-
+# Fastify 监听端口
 EXPOSE 3000
 
-# 使用 PM2 作为进程管理器
-CMD ["pm2-runtime", "start", "ecosystem.config.js"]
+# 启动命令
+CMD ["node", "server.js"]
