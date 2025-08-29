@@ -31,8 +31,6 @@ function isWithinXHours(date, inXDay = 1) {
  * @returns 
  */
 async function parserFeedUrl(validUrls, inXDay = 1, app) {
-    // const url = 'https://hadb.me/atom.xml'
-    // const url = 'https://innei.in/feed'
     if (!validUrls?.length) return { result: [], requsetStatus: [] }
     const result = [];
     // 记录多个rss地址的初始化状态
