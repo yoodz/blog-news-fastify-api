@@ -1,5 +1,5 @@
 'use strict'
-const  task = require('../task');
+const task = require('../task');
 
 module.exports = async function (fastify, opts) {
 
@@ -27,9 +27,6 @@ module.exports = async function (fastify, opts) {
     }
   })
 
-  fastify.get('/triggerDeploy', async function (request, reply) {
-    triggerDeploy()
-  })
 
   fastify.get('/triggerDeploy', async function (request, reply) {
     task()
