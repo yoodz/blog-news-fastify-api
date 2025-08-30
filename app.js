@@ -12,7 +12,7 @@ const options = {}
 module.exports = async function (app, opts) {
   // Place here your custom code!
   // Do not touch the following lines
-  cron.schedule('0 1 * * *', async () => Tasks(app), {
+  cron.schedule('0 6 * * *', async () => Tasks(app), {
     scheduled: true,
     named: 'myCronJob',
     timezone: "Asia/Shanghai"
