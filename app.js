@@ -5,6 +5,7 @@ const AutoLoad = require('@fastify/autoload')
 const cron = require('node-cron');
 const fastifyMongo = require('@fastify/mongodb');
 const Tasks = require('./task')
+const fastifyCors = require('@fastify/cors');
 
 // Pass --options via CLI arguments in command to enable these options.
 const options = {}
@@ -17,6 +18,14 @@ module.exports = async function (app, opts) {
     named: 'myCronJob',
     timezone: "Asia/Shanghai"
   });
+
+  app.register(fastifyCors, {
+  origin: ['https://www.afunny.top', 'http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  // allowedHeaders: ['Content-Type', 'Authorization'],
+  // credentials: true // 如果需要携带cookie等凭证
+});
+
 
   // This loads all plugins defined in plugins
   // those should be support plugins that are reused
