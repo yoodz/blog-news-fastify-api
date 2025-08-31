@@ -20,11 +20,11 @@ module.exports = async function (app, opts) {
   });
 
   app.register(fastifyCors, {
-  origin: ['https://www.afunny.top', 'http://localhost:5173'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  // allowedHeaders: ['Content-Type', 'Authorization'],
-  // credentials: true // 如果需要携带cookie等凭证
-});
+    origin: ['https://www.afunny.top', 'http://localhost:5173'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    // allowedHeaders: ['Content-Type', 'Authorization'],
+    // credentials: true // 如果需要携带cookie等凭证
+  });
 
 
   // This loads all plugins defined in plugins
@@ -37,10 +37,12 @@ module.exports = async function (app, opts) {
 
   // This loads all plugins defined in routes
   // define your routes in one of these
-  app.register(AutoLoad, {
+app.register(async function (prefixedApp) {
+  prefixedApp.register(AutoLoad, {
     dir: path.join(__dirname, 'routes'),
     options: Object.assign({}, opts)
-  })
+  });
+}, { prefix: '/blogNewApi' });
 
   app.register(fastifyMongo, {
     url: 'mongodb://admin:Abc123456@192.168.31.236:27017/blog-news?authSource=admin',
