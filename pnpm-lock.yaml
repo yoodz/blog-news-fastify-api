@@ -38,6 +38,9 @@ importers:
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
+      pino-pretty:
+        specifier: ^13.1.1
+        version: 13.1.1
       rss-parser:
         specifier: ^3.13.0
         version: 3.13.0

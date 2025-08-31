@@ -42,7 +42,7 @@ app.register(async function (prefixedApp) {
     dir: path.join(__dirname, 'routes'),
     options: Object.assign({}, opts)
   });
-}, { prefix: '/blogNewsApi' });
+}, { prefix: '/blogNewsApi' }); // 全局路由前缀
 
   app.register(fastifyMongo, {
     url: 'mongodb://admin:Abc123456@192.168.31.236:27017/blog-news?authSource=admin',

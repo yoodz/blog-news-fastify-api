@@ -2,7 +2,7 @@
 
 module.exports = async function (fastify, opts) {
 
-  fastify.get('/', async function (request, reply) {
-    return { hello: 'world' };
+  fastify.get('/healthy', async function (request, reply) {
+    return { status: 'ok' };
   })
 }
