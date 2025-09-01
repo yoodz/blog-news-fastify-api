@@ -2,7 +2,7 @@
 'use strict'
 const fastify = require('fastify')({
   logger: {
-    level: 'info',
+    level: 'error',
     transport: {
       target: 'pino-pretty',
       options: {
