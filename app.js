@@ -20,7 +20,7 @@ module.exports = async function (app, opts) {
   });
 
   app.register(fastifyCors, {
-    origin: ['https://www.afunny.top', 'http://localhost:5173'],
+    origin: ['https://www.afunny.top', 'http://localhost:5173', 'https://blog.goagix.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     // allowedHeaders: ['Content-Type', 'Authorization'],
     // credentials: true // 如果需要携带cookie等凭证
