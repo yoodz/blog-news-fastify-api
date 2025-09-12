@@ -1,4 +1,4 @@
-const parserFeedUrl = require('./utils/feedUtil');
+const { parserFeedUrl } = require('./utils/feedUtil');
 const dayjs = require('dayjs');
 
 

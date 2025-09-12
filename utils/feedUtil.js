@@ -25,6 +25,38 @@ function isWithinXHours(date, inXDay = 1) {
     return Math.abs(diffInMilliseconds) <= inXDay * 24 * 60 * 60 * 1000;
 }
 
+async function formatFeedItems(app, feed, inXDay, url) {
+    const currentResut = []
+    try {
+        
+        const articles = await app.mongo.db.collection('article').find({ rssUrl: url }).project({
+            link: 1,           // 包含 url 字段
+        }).toArray();
+        feed.items.forEach(item => {
+            const { title = '', link = '', pubDate = '' } = item || {}
+            if (isWithinXHours(pubDate, inXDay)) {
+                const article = articles.find(item => item.link === link)
+                if (article) return
+                const urlFormat = new URL(link || '')
+                currentResut.push({
+                    title,
+                    link,
+                    rssUrl: url,
+                    pubDate: dayjs(pubDate).format('YYYY-MM-DD HH:ss'),
+                    hostname: urlFormat.hostname,
+                    createAt: dayjs().valueOf(),
+                    pv: 0,
+                    like: 0
+                })
+            }
+        });
+        return currentResut
+    } catch (error) {
+        console.error(`获取文章失败, ${url} - ${JSON.stringify(error)}`, error);
+        return []
+    }
+}
+
 /**
  * 
  * @param inXDay 在 inXDay 以内
@@ -38,32 +70,30 @@ async function parserFeedUrl(validUrls, inXDay = 1, app) {
     for (let index = 0; index < validUrls.length; index++) {
         const url = validUrls[index];
 
-        const articles = await app.mongo.db.collection('article').find({ rssUrl: url }).project({
-            link: 1,           // 包含 url 字段
-        }).toArray();
-        const currentResut = []
+        let currentResut = []
         try {
             let feed = await parser.parseURL(url);
+            currentResut = await formatFeedItems(app, feed, inXDay, url)
             requsetStatus[index] = true;
-            feed.items.forEach(item => {
-                const { title = '', link = '', pubDate = '' } = item || {}
-                if (isWithinXHours(pubDate, inXDay)) {
-                    const article = articles.find(item => item.link === link)
-                    if (article) return
-                    const urlFormat = new URL(link || '')
-                    currentResut.push({
-                        title,
-                        link,
-                        rssUrl: url,
-                        pubDate: dayjs(pubDate).format('YYYY-MM-DD HH:ss'),
-                        hostname: urlFormat.hostname,
-                        createAt: dayjs().valueOf(),
-                        pv: 0,
-                        like: 0
-                    })
-                }
+            // feed.items.forEach(item => {
+            //     const { title = '', link = '', pubDate = '' } = item || {}
+            //     if (isWithinXHours(pubDate, inXDay)) {
+            //         const article = articles.find(item => item.link === link)
+            //         if (article) return
+            //         const urlFormat = new URL(link || '')
+            //         currentResut.push({
+            //             title,
+            //             link,
+            //             rssUrl: url,
+            //             pubDate: dayjs(pubDate).format('YYYY-MM-DD HH:ss'),
+            //             hostname: urlFormat.hostname,
+            //             createAt: dayjs().valueOf(),
+            //             pv: 0,
+            //             like: 0
+            //         })
+            //     }
 
-            });
+            // });
         } catch (error) {
             console.error(`获取文章失败, ${url} - ${JSON.stringify(error)}`);
             continue
@@ -72,4 +102,4 @@ async function parserFeedUrl(validUrls, inXDay = 1, app) {
     }
     return { result, requsetStatus }
 }
-module.exports = parserFeedUrl
+module.exports = { parserFeedUrl, formatFeedItems }

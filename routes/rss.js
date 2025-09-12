@@ -1,6 +1,15 @@
 'use strict'
 const task = require('../task');
+const Parser = require('rss-parser');
+const dayjs = require('dayjs');
+const { formatFeedItems } = require("../utils/feedUtil")
 
+const parser = new Parser({
+  customFields: {
+    feed: ['foo'],
+    item: ['bar']
+  }
+});
 module.exports = async function (fastify, opts) {
 
   // 新增 RSS
@@ -8,28 +17,40 @@ module.exports = async function (fastify, opts) {
     try {
       const rssData = request.body;
 
-      const { title, rssUrl } = rssData || {}
-      if (!title || !rssUrl) {
+      const { rssUrl } = rssData || {}
+      if (!rssUrl) {
         return reply.code(400).send({ error: '缺少必要字段' });
       }
 
-      if (title?.length > 50 || rssUrl?.length > 50) {
+      if (rssUrl?.length > 50) {
         return reply.code(400).send({ error: '最大长度不超过50字符' });
       }
+
+
+      let feed = await parser.parseURL(rssUrl);
+      const { image, title, description, lastBuildDate, generator } = feed || {}
+      const articles = await formatFeedItems(fastify, feed, 999, rssUrl)
       const data = {
         title,
         rssUrl,
+        image,
+        description,
+        lastBuildDate,
+        generator,
         deleted: 0,
-        auditStatus: 0,
-        init: 0
+        auditStatus: 1,
+        init: 1
       }
-      const result = await fastify.mongo.db.collection('rss').insertOne(data);
+      await fastify.mongo.db.collection('article').insertMany(
+        articles,
+        { ordered: false } // 无序插入，遇到重复错误继续执行
+      );
+      await fastify.mongo.db.collection('rss').insertOne(data);
       return {
-        success: true,
-        insertedId: result.insertedId
+        success: true
       }
     } catch (error) {
-      fastify.log.error('新增RSS错误:', error)
+      console.log(error, 'rss-50')
       return reply.code(500).send({ error: '新增失败' })
     }
   })
