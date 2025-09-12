@@ -2,6 +2,7 @@
 const task = require('../task');
 const Parser = require('rss-parser');
 const { formatFeedItems } = require("../utils/feedUtil")
+const dayjs = require('dayjs');
 
 const parser = new Parser({
   customFields: {
@@ -44,7 +45,8 @@ module.exports = async function (fastify, opts) {
         generator,
         deleted: 0,
         auditStatus: 1,
-        init: 1
+        init: 1,
+        createAt: dayjs().format('YYYY-MM-DD HH:mm')
       }
       await fastify.mongo.db.collection('article').insertMany(
         articles,
