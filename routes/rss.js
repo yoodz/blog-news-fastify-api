@@ -12,6 +12,10 @@ module.exports = async function (fastify, opts) {
       if (!title || !rssUrl) {
         return reply.code(400).send({ error: '缺少必要字段' });
       }
+
+      if (title?.length > 50 || rssUrl?.length > 50) {
+        return reply.code(400).send({ error: '最大长度不超过50字符' });
+      }
       const data = {
         title,
         rssUrl,
