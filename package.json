@@ -9,7 +9,7 @@
   "scripts": {
     "test": "node --test test/**/*.test.js",
     "start": "fastify start -l info app.js",
-    "dev": "fastify start -w -l info -P -p 3333 app.js"
+    "dev": "cross-env NODE_ENV=development fastify start -w -l info -P -p 3333 app.js"
   },
   "keywords": [],
   "author": "",
@@ -27,5 +27,8 @@
     "node-fetch": "^3.3.2",
     "pino-pretty": "^13.1.1",
     "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.0.0"
   }
 }

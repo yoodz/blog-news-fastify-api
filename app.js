@@ -20,12 +20,29 @@ module.exports = async function (app, opts) {
   });
 
   app.register(fastifyCors, {
-    origin: ['https://www.afunny.top', 'http://localhost', 'https://blog.goagix.com', 'https://blognews.goagix.com', 'https://blognews.afunny.top'],
+    origin: (origin, cb) => {
+      // 开发调试阶段或者其他项目的开发环境，直接允许
+      if (process.env.NODE_ENV === 'development' || origin?.startsWith('http://localhost')) {
+        cb(null, true);
+        return;
+      }
+      // 允许的域名列表
+      const whitelist = [
+        'https://www.afunny.top',
+        'https://blog.goagix.com',
+        'https://blognews.goagix.com',
+        'https://blognews.afunny.top'
+      ];
+      if (whitelist.includes(origin)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Not allowed by CORS'), false);
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     // allowedHeaders: ['Content-Type', 'Authorization'],
     // credentials: true // 如果需要携带cookie等凭证
   });
-
 
   // This loads all plugins defined in plugins
   // those should be support plugins that are reused
@@ -37,12 +54,12 @@ module.exports = async function (app, opts) {
 
   // This loads all plugins defined in routes
   // define your routes in one of these
-app.register(async function (prefixedApp) {
-  prefixedApp.register(AutoLoad, {
-    dir: path.join(__dirname, 'routes'),
-    options: Object.assign({}, opts)
-  });
-}, { prefix: '/blogNewsApi' }); // 全局路由前缀
+  app.register(async function (prefixedApp) {
+    prefixedApp.register(AutoLoad, {
+      dir: path.join(__dirname, 'routes'),
+      options: Object.assign({}, opts)
+    });
+  }, { prefix: '/blogNewsApi' }); // 全局路由前缀
 
   app.register(fastifyMongo, {
     url: 'mongodb://admin:Abc123456@192.168.31.236:27017/blog-news?authSource=admin',
