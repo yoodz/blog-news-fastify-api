@@ -1,7 +1,6 @@
 'use strict'
 const task = require('../task');
 const Parser = require('rss-parser');
-const dayjs = require('dayjs');
 const { formatFeedItems } = require("../utils/feedUtil")
 
 const parser = new Parser({
@@ -26,7 +25,13 @@ module.exports = async function (fastify, opts) {
         return reply.code(400).send({ error: '最大长度不超过50字符' });
       }
 
-
+      const exists = await fastify.mongo.db.collection('rss').findOne({ rssUrl });
+      if (exists) {
+        return {
+          success: true,
+          repeat: true
+        }
+      }
       let feed = await parser.parseURL(rssUrl);
       const { image, title, description, lastBuildDate, generator } = feed || {}
       const articles = await formatFeedItems(fastify, feed, 999, rssUrl)
