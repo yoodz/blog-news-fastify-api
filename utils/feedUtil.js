@@ -28,7 +28,7 @@ function isWithinXHours(date, inXDay = 1) {
 async function formatFeedItems(app, feed, inXDay, url) {
     const currentResut = []
     try {
-        
+
         const articles = await app.mongo.db.collection('article').find({ rssUrl: url }).project({
             link: 1,           // 包含 url 字段
         }).toArray();
@@ -67,39 +67,27 @@ async function parserFeedUrl(validUrls, inXDay = 1, app) {
     const result = [];
     // 记录多个rss地址的初始化状态
     const requsetStatus = Array.from({ length: validUrls.length }).fill(false);
-    for (let index = 0; index < validUrls.length; index++) {
-        const url = validUrls[index];
-
-        let currentResut = []
+    const promises = validUrls.map(async (url, index) => {
         try {
-            let feed = await parser.parseURL(url);
-            currentResut = await formatFeedItems(app, feed, inXDay, url)
+            const feed = await parser.parseURL(url);
+            const currentResult = await formatFeedItems(app, feed, inXDay, url);
             requsetStatus[index] = true;
-            // feed.items.forEach(item => {
-            //     const { title = '', link = '', pubDate = '' } = item || {}
-            //     if (isWithinXHours(pubDate, inXDay)) {
-            //         const article = articles.find(item => item.link === link)
-            //         if (article) return
-            //         const urlFormat = new URL(link || '')
-            //         currentResut.push({
-            //             title,
-            //             link,
-            //             rssUrl: url,
-            //             pubDate: dayjs(pubDate).format('YYYY-MM-DD HH:ss'),
-            //             hostname: urlFormat.hostname,
-            //             createAt: dayjs().valueOf(),
-            //             pv: 0,
-            //             like: 0
-            //         })
-            //     }
-
-            // });
+            return { index, result: currentResult };
         } catch (error) {
-            console.error(`获取文章失败, ${url} - ${JSON.stringify(error)}`);
-            continue
+            console.error(`获取文章失败, ${url} - ${error.message}`);
+            requsetStatus[index] = false;
+            return { index, error: error.message };
         }
-        result[index] = currentResut
-    }
+    });
+
+    const settledResults = await Promise.allSettled(promises);
+
+    settledResults.forEach(settled => {
+        if (settled.status === 'fulfilled') {
+            const { index, result: currentResult } = settled.value;
+            result[index] = currentResult;
+        }
+    });
     return { result, requsetStatus }
 }
 module.exports = { parserFeedUrl, formatFeedItems }

@@ -18,6 +18,7 @@ async function triggerDeploy() {
 
 const Tasks = async (app) => {
   try {
+    console.time('定时任务执行');
     console.log('定时任务执行开始', 'task-21')
     const rssUrl = await app.mongo.db.collection('rss').find({ deleted: 0, auditStatus: 1, init: 1 }).toArray();
 
@@ -25,7 +26,6 @@ const Tasks = async (app) => {
       console.log('没有需要更新的rss地址')
       return
     }
-
     const validUrls = rssUrl?.map(item => item.rssUrl) || []
     const { result, requsetStatus } = await parserFeedUrl(validUrls, 5, app)
     for (let index = 0; index < requsetStatus.length; index++) {
@@ -44,9 +44,10 @@ const Tasks = async (app) => {
     }
     await app.mongo.db.collection('config').updateOne({ key: "update_at" }, { $set: { value: dayjs().format('YYYY-MM-DD HH:mm') } })
     triggerDeploy();
-    console.log('定时任务执行完成', 'task-21')
   } catch (error) {
     console.log(error, 'task-53')
+  } finally {
+    console.timeEnd('定时任务执行');
   }
 }
 module.exports = Tasks;
