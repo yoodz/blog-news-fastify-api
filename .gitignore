@@ -47,7 +47,7 @@ profile-*
 
 # webstorm
 .idea
-
+docker-compose.yml
 # vscode
 .vscode
 *code-workspace

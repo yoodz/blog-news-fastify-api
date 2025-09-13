@@ -3,6 +3,7 @@ const task = require('../task');
 const Parser = require('rss-parser');
 const { formatFeedItems } = require("../utils/feedUtil")
 const dayjs = require('dayjs');
+const { notify } = require('../utils/message')
 
 const parser = new Parser({
   customFields: {
@@ -15,9 +16,11 @@ module.exports = async function (fastify, opts) {
   // 新增 RSS
   fastify.post('/rss', async function (request, reply) {
     try {
+
       const rssData = request.body;
 
       const { rssUrl } = rssData || {}
+
       if (!rssUrl) {
         return reply.code(400).send({ error: '缺少必要字段' });
       }
@@ -53,6 +56,10 @@ module.exports = async function (fastify, opts) {
         { ordered: false } // 无序插入，遇到重复错误继续执行
       );
       await fastify.mongo.db.collection('rss').insertOne(data);
+      notify({
+        title: '新增rss地址成功',
+        body: rssUrl
+      })
       return {
         success: true
       }
