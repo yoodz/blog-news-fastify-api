@@ -65,6 +65,10 @@ module.exports = async function (fastify, opts) {
       }
     } catch (error) {
       console.log(error, 'rss-50')
+          notify({
+        title: '新增rss地址失败',
+        body: request.body.rssUrl
+      })
       return reply.code(500).send({ error: '新增失败' })
     }
   })
