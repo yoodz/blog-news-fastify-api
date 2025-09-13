@@ -22,7 +22,7 @@ module.exports = async function (app, opts) {
   app.register(fastifyCors, {
     origin: (origin, cb) => {
       // 开发调试阶段或者其他项目的开发环境，直接允许
-      if (process.env.NODE_ENV === 'development' || origin?.includes('localhost') || origin?.includes('afunny.top') || origin?.includes('goagix.com')) {
+      if (!origin || process.env.NODE_ENV === 'development' || origin?.includes('localhost') || origin?.includes('afunny.top') || origin?.includes('goagix.com')) {
         cb(null, true);
         return;
       }
