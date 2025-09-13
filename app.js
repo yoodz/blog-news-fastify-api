@@ -22,22 +22,11 @@ module.exports = async function (app, opts) {
   app.register(fastifyCors, {
     origin: (origin, cb) => {
       // 开发调试阶段或者其他项目的开发环境，直接允许
-      if (process.env.NODE_ENV === 'development' || origin?.startsWith('http://localhost')) {
+      if (process.env.NODE_ENV === 'development' || origin?.includes('localhost') || origin?.includes('afunny.top') || origin?.includes('goagix.com')) {
         cb(null, true);
         return;
       }
-      // 允许的域名列表
-      const whitelist = [
-        'https://www.afunny.top',
-        'https://blog.goagix.com',
-        'https://blognews.goagix.com',
-        'https://blognews.afunny.top'
-      ];
-      if (whitelist.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(new Error('Not allowed by CORS'), false);
-      }
+      cb(new Error('Not allowed by CORS'), false);
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     // allowedHeaders: ['Content-Type', 'Authorization'],
