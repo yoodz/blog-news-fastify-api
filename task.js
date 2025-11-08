@@ -19,7 +19,7 @@ async function triggerDeploy() {
 const Tasks = async (app) => {
   try {
     console.time('定时任务执行');
-    console.log('定时任务执行开始', 'task-21')
+    console.log(`定时任务执行开始-${dayjs().format('YYYY-MM-DD HH:mm')}`, 'task-21')
     const rssUrl = await app.mongo.db.collection('rss').find({ deleted: 0, auditStatus: 1, init: 1 }).toArray();
 
     if (!rssUrl?.length) {
