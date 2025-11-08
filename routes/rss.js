@@ -1,5 +1,4 @@
 'use strict'
-const task = require('../task');
 const Parser = require('rss-parser');
 const { formatFeedItems } = require("../utils/feedUtil")
 const dayjs = require('dayjs');
