@@ -1,5 +1,7 @@
 'use strict'
 
+const dayjs = require('dayjs');
+
 module.exports = async function (fastify, opts) {
 
   fastify.get('/track-visit', async function (request, reply) {
@@ -16,6 +18,34 @@ module.exports = async function (fastify, opts) {
         { $inc: { count: 1 } }, // 增加访问量
         { upsert: true }        // 如果不存在则创建
       );
+
+      // 写入详细访问记录（用于统计）
+      const logsCollection = fastify.mongo.db.collection('visits_logs');
+      const now = new Date();
+      const minuteKey = dayjs(now).format('YYYY-MM-DD HH:mm');
+
+      // 获取访问者信息
+      const ip = request.ip || request.headers['x-forwarded-for'] || request.connection.remoteAddress;
+      const userAgent = request.headers['user-agent'] || '';
+      const referer = request.headers['referer'] || '';
+      const acceptLanguage = request.headers['accept-language'] || '';
+
+      // 判断是否为爬虫
+      const botPatterns = /bot|crawler|spider|scraper|curl|wget|python|go-http|java|httpclient/i;
+      const isBot = botPatterns.test(userAgent);
+
+      await logsCollection.insertOne({
+        slug,
+        timestamp: now,
+        minuteKey,
+        visitor: {
+          ip,
+          userAgent,
+          referer,
+          acceptLanguage,
+          isBot
+        }
+      });
 
       let resultCount;
       const formattedObject = {};
