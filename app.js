@@ -1,10 +1,18 @@
 'use strict'
 
+// 配置路径别名
+const moduleAlias = require('module-alias');
+moduleAlias.addAliases({
+  '@utils': __dirname + '/utils',
+  '@tasks': __dirname + '/tasks',
+});
+
+require('dotenv').config();
 const path = require('node:path')
 const AutoLoad = require('@fastify/autoload')
 const cron = require('node-cron');
 const fastifyMongo = require('@fastify/mongodb');
-const Tasks = require('./task')
+const { rssUpdate, dailyVisitReport } = require('@tasks');
 const fastifyCors = require('@fastify/cors');
 
 // Pass --options via CLI arguments in command to enable these options.
@@ -13,9 +21,15 @@ const options = {}
 module.exports = async function (app, opts) {
   // Place here your custom code!
   // Do not touch the following lines
-  cron.schedule('0 6 * * *', async () => Tasks(app), {
+  cron.schedule('0 6 * * *', async () => rssUpdate(app), {
     scheduled: true,
-    named: 'myCronJob',
+    named: 'rssUpdate',
+    timezone: "Asia/Shanghai"
+  });
+
+  cron.schedule('0 8 * * *', async () => dailyVisitReport(app), {
+    scheduled: true,
+    named: 'dailyVisitReport',
     timezone: "Asia/Shanghai"
   });
 

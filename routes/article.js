@@ -1,5 +1,5 @@
 'use strict'
-const task = require('../task');
+const { rssUpdate } = require('@tasks');
 
 module.exports = async function (fastify, opts) {
 
@@ -48,6 +48,6 @@ module.exports = async function (fastify, opts) {
   })
 
   fastify.get('/task', async function (request, reply) {
-    task(fastify)
+    rssUpdate(fastify)
   })
 }

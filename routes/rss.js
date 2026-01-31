@@ -1,8 +1,8 @@
 'use strict'
 const Parser = require('rss-parser');
-const { formatFeedItems } = require("../utils/feedUtil")
+const { formatFeedItems } = require('@utils/feedUtil')
 const dayjs = require('dayjs');
-const { notify } = require('../utils/message')
+const { notify } = require('@utils/message')
 
 const parser = new Parser({
   customFields: {

@@ -23,6 +23,9 @@ importers:
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
       fastify:
         specifier: ^5.0.0
         version: 5.5.0
@@ -32,6 +35,9 @@ importers:
       fastify-plugin:
         specifier: ^5.0.0
         version: 5.0.1
+      module-alias:
+        specifier: ^2.2.3
+        version: 2.2.3
       node-cron:
         specifier: ^4.2.1
         version: 4.2.1
@@ -188,6 +194,10 @@ packages:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==, tarball: https://registry.npmmirror.com/dotenv/-/dotenv-16.6.1.tgz}
     engines: {node: '>=12'}
 
+  dotenv@17.2.3:
+    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==, tarball: https://registry.npmmirror.com/dotenv/-/dotenv-17.2.3.tgz}
+    engines: {node: '>=12'}
+
   end-of-stream@1.4.5:
     resolution: {integrity: sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg==, tarball: https://registry.npmmirror.com/end-of-stream/-/end-of-stream-1.4.5.tgz}
 
@@ -323,6 +333,9 @@ packages:
 
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==, tarball: https://registry.npmmirror.com/minimist/-/minimist-1.2.8.tgz}
+
+  module-alias@2.2.3:
+    resolution: {integrity: sha512-23g5BFj4zdQL/b6tor7Ji+QY4pEfNH784BMslY9Qb0UnJWRAt+lQGLYmRaM0KDBwIG23ffEBELhZDP2rhi9f/Q==, tarball: https://registry.npmmirror.com/module-alias/-/module-alias-2.2.3.tgz}
 
   mongodb-connection-string-url@3.0.2:
     resolution: {integrity: sha512-rMO7CGo/9BFwyZABcKAWL8UJwH/Kc2x0g72uhDWzG48URRax5TCIcJ7Rc3RZqffZzO/Gwff/jyKwCU9TN8gehA==, tarball: https://registry.npmmirror.com/mongodb-connection-string-url/-/mongodb-connection-string-url-3.0.2.tgz}
@@ -732,6 +745,8 @@ snapshots:
 
   dotenv@16.6.1: {}
 
+  dotenv@17.2.3: {}
+
   end-of-stream@1.4.5:
     dependencies:
       once: 1.4.0
@@ -890,6 +905,8 @@ snapshots:
       mime-db: 1.52.0
 
   minimist@1.2.8: {}
+
+  module-alias@2.2.3: {}
 
   mongodb-connection-string-url@3.0.2:
     dependencies:

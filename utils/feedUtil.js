@@ -58,13 +58,16 @@ async function formatFeedItems(app, feed, inXDay, url) {
 }
 
 /**
- * 
- * @param inXDay 在 inXDay 以内
- * @returns 
+ * 解析 RSS URL 列表
+ * @param {Array} validUrls - RSS URL 数组
+ * @param {Number} inXDay - 获取最近几天的文章
+ * @param {Object} app - Fastify app 实例
+ * @returns {Object} { result, requsetStatus, errors }
  */
 async function parserFeedUrl(validUrls, inXDay = 1, app) {
-    if (!validUrls?.length) return { result: [], requsetStatus: [] }
+    if (!validUrls?.length) return { result: [], requsetStatus: [], errors: [] }
     const result = [];
+    const errors = [];
     // 记录多个rss地址的初始化状态
     const requsetStatus = Array.from({ length: validUrls.length }).fill(false);
     const promises = validUrls.map(async (url, index) => {
@@ -74,9 +77,11 @@ async function parserFeedUrl(validUrls, inXDay = 1, app) {
             requsetStatus[index] = true;
             return { index, result: currentResult };
         } catch (error) {
-            console.error(`获取文章失败, ${url} - ${error.message}`);
+            const errorMsg = error.message || '未知错误';
+            console.error(`获取文章失败, ${url} - ${errorMsg}`);
             requsetStatus[index] = false;
-            return { index, error: error.message };
+            errors[index] = errorMsg;
+            return { index, error: errorMsg };
         }
     });
 
@@ -88,6 +93,6 @@ async function parserFeedUrl(validUrls, inXDay = 1, app) {
             result[index] = currentResult;
         }
     });
-    return { result, requsetStatus }
+    return { result, requsetStatus, errors }
 }
 module.exports = { parserFeedUrl, formatFeedItems }
