@@ -21,9 +21,9 @@ async function triggerDeploy() {
 async function sendBarkNotification(title, content) {
   try {
     const fetch = (await import('node-fetch')).default;
-    const barkUrl = process.env.BARK_URL;
+    const barkUrl = process.env.BARK;
     if (!barkUrl) {
-      console.log('BARK_URL 环境变量未配置，跳过推送');
+      console.log('BARK 环境变量未配置，跳过推送');
       return;
     }
     const encodedTitle = encodeURIComponent(title);

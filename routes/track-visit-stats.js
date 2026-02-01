@@ -36,37 +36,39 @@ module.exports = async function (fastify, opts) {
         pipeline.push({ $match: matchConditions });
       }
 
-      // 按分钟分组统计
+      // 按日期和文章分组统计
       pipeline.push(
         {
           $group: {
-            _id: '$minuteKey',
-            count: { $sum: 1 }
+            _id: {
+              date: '$minuteKey',
+              article: '$slug'
+            },
+            visits: { $sum: 1 }
           }
         },
         {
-          $sort: { _id: 1 }
+          $project: {
+            _id: 0,
+            date: '$_id.date',
+            article: '$_id.article',
+            visits: 1
+          }
+        },
+        {
+          $sort: { date: 1, article: 1 }
         }
       );
 
       // 执行聚合查询
       const result = await logsCollection.aggregate(pipeline).toArray();
 
-      // 格式化结果
-      const formattedResult = {};
-      let total = 0;
-      result.forEach(item => {
-        formattedResult[item._id] = item.count;
-        total += item.count;
-      });
-
       return reply
         .code(200)
         .header('Content-Type', 'application/json')
         .send({
           success: true,
-          result: formattedResult,
-          total
+          data: result
         });
 
     } catch (err) {
