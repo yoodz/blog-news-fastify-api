@@ -27,7 +27,7 @@ module.exports = async function (app, opts) {
     timezone: "Asia/Shanghai"
   });
 
-  cron.schedule('0 8 * * *', async () => dailyVisitReport(app), {
+  cron.schedule('0 6 * * *', async () => dailyVisitReport(app), {
     scheduled: true,
     named: 'dailyVisitReport',
     timezone: "Asia/Shanghai"
