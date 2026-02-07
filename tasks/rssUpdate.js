@@ -42,14 +42,8 @@ async function sendRssUpdateReport(successCount, failCount, totalArticles, faile
     message += `\n`;
   }
 
-  if (failedSources.length > 0) {
-    message += `🔴 失败源 (${failedSources.length}个):\n`;
-    failedSources.forEach((item, index) => {
-      message += `${index + 1}. ${item.title || '未知'}\n`;
-      message += `   ${item.url}\n`;
-      message += `   ❌ ${item.error}\n`;
-    });
-  } else {
+  // 不再推送失败源详情
+  if (failedSources.length === 0) {
     message += `🎉 全部成功！`;
   }
 
