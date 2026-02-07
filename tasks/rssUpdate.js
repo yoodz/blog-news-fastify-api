@@ -1,6 +1,14 @@
 const { parserFeedUrl } = require('@utils/feedUtil');
+const Parser = require('rss-parser');
 const dayjs = require('dayjs');
-const { triggerDeploy, sendBarkNotification } = require('@utils/notify');
+const { sendBarkNotification } = require('@utils/notify');
+
+const parser = new Parser({
+  customFields: {
+    feed: ['foo'],
+    item: ['bar']
+  }
+});
 
 /**
  * 发送 RSS 更新结果通知
@@ -106,6 +114,31 @@ const rssUpdate = async (app) => {
         } else {
           console.log(`[RSS更新] ${source.rssUrl} 无新文章`);
         }
+
+        // 更新 RSS 源的元数据（重新解析获取最新信息）
+        try {
+          const feed = await parser.parseURL(source.rssUrl);
+          const { image, title, description, lastBuildDate, generator } = feed || {};
+          await app.mongo.db.collection('rss').updateOne(
+            { rssUrl: source.rssUrl },
+            {
+              $set: {
+                title,
+                image,
+                description,
+                lastBuildDate,
+                generator,
+                init: 1,
+                // 重置失败次数和最后更新时间
+                errorCount: 0,
+                lastUpdateAt: dayjs().format('YYYY-MM-DD HH:mm')
+              }
+            }
+          );
+          console.log(`[RSS更新] ${source.rssUrl} 元数据已更新`);
+        } catch (err) {
+          console.error(`[RSS更新] ${source.rssUrl} 更新元数据失败:`, err);
+        }
       } else {
         failCount++;
         failedSources.push({
@@ -114,6 +147,23 @@ const rssUpdate = async (app) => {
           error: errors[i] || '未知错误'
         });
         console.error(`[RSS更新] ${source.rssUrl} 获取失败: ${errors[i]}`);
+
+        // 更新失败时也要更新最后更新时间和失败次数（使用原子递增避免并发问题）
+        try {
+          await app.mongo.db.collection('rss').updateOne(
+            { rssUrl: source.rssUrl },
+            {
+              $set: {
+                lastUpdateAt: dayjs().format('YYYY-MM-DD HH:mm')
+              },
+              $inc: {
+                errorCount: 1
+              }
+            }
+          );
+        } catch (err) {
+          console.error(`[RSS更新] ${source.rssUrl} 更新失败统计失败:`, err);
+        }
       }
     }
 
@@ -125,9 +175,6 @@ const rssUpdate = async (app) => {
       { key: 'update_at' },
       { $set: { value: dayjs().format('YYYY-MM-DD HH:mm') } }
     );
-
-    // 触发部署
-    await triggerDeploy();
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
     console.log(`[RSS更新] 任务完成 - 成功: ${successCount}, 失败: ${failCount}, 新文章: ${totalArticles}, 耗时: ${duration}s`);

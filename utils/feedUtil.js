@@ -26,7 +26,7 @@ function isWithinXHours(date, inXDay = 1) {
 }
 
 async function formatFeedItems(app, feed, inXDay, url) {
-    const currentResut = []
+    const currentResult = []
     try {
 
         const articles = await app.mongo.db.collection('article').find({ rssUrl: url }).project({
@@ -38,7 +38,7 @@ async function formatFeedItems(app, feed, inXDay, url) {
                 const article = articles.find(item => item.link === link)
                 if (article) return
                 const urlFormat = new URL(link || '')
-                currentResut.push({
+                currentResult.push({
                     title,
                     link,
                     rssUrl: url,
@@ -50,7 +50,7 @@ async function formatFeedItems(app, feed, inXDay, url) {
                 })
             }
         });
-        return currentResut
+        return currentResult
     } catch (error) {
         console.error(`获取文章失败, ${url} - ${JSON.stringify(error)}`, error);
         return []

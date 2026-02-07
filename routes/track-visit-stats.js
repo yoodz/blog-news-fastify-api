@@ -36,39 +36,62 @@ module.exports = async function (fastify, opts) {
         pipeline.push({ $match: matchConditions });
       }
 
-      // 按日期和文章分组统计
+      // 按日期分组统计（每天一条记录，包含该天所有文章的访问详情）
       pipeline.push(
         {
           $group: {
             _id: {
-              date: '$minuteKey',
-              article: '$slug'
+              $substr: ['$minuteKey', 0, 10]  // 提取日期部分 YYYY-MM-DD
             },
-            visits: { $sum: 1 }
+            totalVisits: { $sum: 1 },
+            articles: {
+              $push: {
+                article: '$slug',
+                visits: 1
+              }
+            }
           }
         },
         {
           $project: {
             _id: 0,
-            date: '$_id.date',
-            article: '$_id.article',
-            visits: 1
+            date: '$_id',
+            totalVisits: 1,
+            articles: 1
           }
         },
         {
-          $sort: { date: 1, article: 1 }
+          $sort: { date: 1 }
         }
       );
 
       // 执行聚合查询
       const result = await logsCollection.aggregate(pipeline).toArray();
 
+      // 对每天的文章进行聚合（相同文章的访问量合并）
+      const processedResult = result.map(day => {
+        const articleMap = new Map();
+
+        day.articles.forEach((item) => {
+          const article = item.article || '未知页面';
+          articleMap.set(article, (articleMap.get(article) || 0) + item.visits);
+        });
+
+        return {
+          date: day.date,
+          totalVisits: day.totalVisits,
+          articles: Array.from(articleMap.entries())
+            .map(([article, visits]) => ({ article, visits }))
+            .sort((a, b) => b.visits - a.visits)
+        };
+      });
+
       return reply
         .code(200)
         .header('Content-Type', 'application/json')
         .send({
           success: true,
-          data: result
+          data: processedResult
         });
 
     } catch (err) {
