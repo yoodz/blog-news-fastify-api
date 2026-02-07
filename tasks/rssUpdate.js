@@ -11,6 +11,12 @@ const { triggerDeploy, sendBarkNotification } = require('@utils/notify');
  * @param {Array} newArticles - 新增文章列表 [{title, link, sourceTitle, sourceUrl}]
  */
 async function sendRssUpdateReport(successCount, failCount, totalArticles, failedSources, newArticles) {
+  // 如果没有新文章，不发送通知
+  if (totalArticles === 0) {
+    console.log(`[RSS更新] 无新文章，跳过推送通知`);
+    return;
+  }
+
   let message = `📰 RSS更新报告\n\n`;
   message += `⏰ ${dayjs().format('YYYY-MM-DD HH:mm')}\n`;
   message += `✅ 成功: ${successCount} | ❌ 失败: ${failCount} | 📄 新文章: ${totalArticles}\n\n`;
@@ -44,7 +50,7 @@ async function sendRssUpdateReport(successCount, failCount, totalArticles, faile
 
 /**
  * RSS 更新任务
- * 每天早上 6 点执行
+ * 每 5 分钟执行一次
  * @param {Object} app - Fastify app instance
  */
 const rssUpdate = async (app) => {
@@ -86,7 +92,7 @@ const rssUpdate = async (app) => {
         if (articles?.length) {
           await app.mongo.db.collection('article').insertMany(articles, { ordered: false });
           totalArticles += articles.length;
-          console.log(`[RSS更新] ${source.rssUrl} 成功获取 ${articles.length} 篇文章`);
+          console.log(`[RSS更新] ${source.rssUrl} 成功获取 ${articles.length} 篇新文章`);
 
           // 收集新增文章信息
           articles.forEach(article => {
