@@ -14,6 +14,7 @@ const cron = require('node-cron');
 const fastifyMongo = require('@fastify/mongodb');
 const { rssUpdate, dailyVisitReport } = require('@tasks');
 const fastifyCors = require('@fastify/cors');
+const fastifyJwt = require('@fastify/jwt');
 
 // Pass --options via CLI arguments in command to enable these options.
 const options = {}
@@ -43,8 +44,13 @@ module.exports = async function (app, opts) {
       cb(new Error('Not allowed by CORS'), false);
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    // allowedHeaders: ['Content-Type', 'Authorization'],
-    // credentials: true // 如果需要携带cookie等凭证
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+  });
+
+  // 注册 JWT 插件
+  app.register(fastifyJwt, {
+    secret: process.env.JWT_SECRET || 'blog-news-secret-key-2024'
   });
 
   // This loads all plugins defined in plugins

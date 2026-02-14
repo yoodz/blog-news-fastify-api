@@ -6,7 +6,7 @@ module.exports = async function (fastify, opts) {
 
   fastify.get('/track-visit-stats', async function (request, reply) {
     try {
-      const { slug, startTime, endTime } = request.query;
+      const { slug, startTime, endTime, excludeBots = 'true' } = request.query;
 
       const logsCollection = fastify.mongo.db.collection('visits_logs');
 
@@ -34,6 +34,15 @@ module.exports = async function (fastify, opts) {
 
       if (Object.keys(matchConditions).length > 0) {
         pipeline.push({ $match: matchConditions });
+      }
+
+      // 排除爬虫访问（根据查询参数决定）
+      if (excludeBots === 'true') {
+        pipeline.push({
+          $match: {
+            'visitor.isBot': { $ne: true }
+          }
+        });
       }
 
       // 按日期分组统计（每天一条记录，包含该天所有文章的访问详情）

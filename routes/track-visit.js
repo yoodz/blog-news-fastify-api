@@ -21,8 +21,7 @@ module.exports = async function (fastify, opts) {
 
       // 写入详细访问记录（用于统计）
       const logsCollection = fastify.mongo.db.collection('visits_logs');
-      const now = new Date();
-      const minuteKey = dayjs(now).format('YYYY-MM-DD HH:mm');
+      const now = dayjs().format('YYYY-MM-DD HH:mm');
 
       // 获取访问者信息
       const ip = request.ip || request.headers['x-forwarded-for'] || request.connection.remoteAddress;
@@ -36,8 +35,7 @@ module.exports = async function (fastify, opts) {
 
       await logsCollection.insertOne({
         slug,
-        timestamp: now,
-        minuteKey,
+        minuteKey: now,
         visitor: {
           ip,
           userAgent,
