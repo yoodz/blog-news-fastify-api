@@ -8,7 +8,10 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
-      "Bash(cmd //c \"taskkill /F /PID 19864\")"
+      "Bash(cmd //c \"taskkill /F /PID 19864\")",
+      "Bash(node:*)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

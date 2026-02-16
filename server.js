@@ -1,6 +1,7 @@
 // server.js
 'use strict'
 const fastify = require('fastify')({
+  bodyLimit: 50 * 1024 * 1024, // 50MB - 支持大文件上传
   logger: {
     level: 'error',
     transport: {

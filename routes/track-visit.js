@@ -29,8 +29,8 @@ module.exports = async function (fastify, opts) {
       const referer = request.headers['referer'] || '';
       const acceptLanguage = request.headers['accept-language'] || '';
 
-      // 判断是否为爬虫
-      const botPatterns = /bot|crawler|spider|scraper|curl|wget|python|go-http|java|httpclient/i;
+      // 判断是否为爬虫（包括 axios、fetch、node 等非浏览器请求）
+      const botPatterns = /bot|crawler|spider|scraper|curl|wget|python|go-http|java|httpclient|axios|fetch|node/i;
       const isBot = botPatterns.test(userAgent);
 
       await logsCollection.insertOne({
