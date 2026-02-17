@@ -40,7 +40,7 @@ async function initAdmin() {
     }
 
     // 创建管理员用户
-    const hashedPassword = await hashPassword('ant.design');
+    const hashedPassword = await hashPassword('admin');
 
     const result = await db.collection('users').insertOne({
       username: 'admin',
@@ -56,7 +56,7 @@ async function initAdmin() {
 
     console.log('管理员用户创建成功！');
     console.log('用户名: admin');
-    console.log('密码: ant.design');
+    console.log('密码: admin');
     console.log('用户ID:', result.insertedId);
 
   } catch (error) {
