@@ -12,7 +12,7 @@ const path = require('node:path')
 const AutoLoad = require('@fastify/autoload')
 const cron = require('node-cron');
 const fastifyMongo = require('@fastify/mongodb');
-const { rssUpdate, dailyVisitReport } = require('@tasks');
+const { rssUpdate, dailyVisitReport, cleanupRequestLogs } = require('@tasks');
 const fastifyCors = require('@fastify/cors');
 const fastifyJwt = require('@fastify/jwt');
 
@@ -31,6 +31,13 @@ module.exports = async function (app, opts) {
   cron.schedule('0 6 * * *', async () => dailyVisitReport(app), {
     scheduled: true,
     named: 'dailyVisitReport',
+    timezone: "Asia/Shanghai"
+  });
+
+  // 每天凌晨2点清理旧请求日志
+  cron.schedule('0 2 * * *', async () => cleanupRequestLogs(app), {
+    scheduled: true,
+    named: 'cleanupRequestLogs',
     timezone: "Asia/Shanghai"
   });
 
@@ -53,6 +60,12 @@ module.exports = async function (app, opts) {
     secret: process.env.JWT_SECRET || 'blog-news-secret-key-2024'
   });
 
+  // 注册 MongoDB（必须在 plugins 之前，因为 requestLogger 需要）
+  app.register(fastifyMongo, {
+    url: 'mongodb://admin:Abc123456@192.168.31.236:27017/blog-news?authSource=admin',
+    forceClose: true
+  });
+
   // This loads all plugins defined in plugins
   // those should be support plugins that are reused
   // through your application
@@ -69,11 +82,6 @@ module.exports = async function (app, opts) {
       options: Object.assign({}, opts)
     });
   }, { prefix: '/blogNewsApi' }); // 全局路由前缀
-
-  app.register(fastifyMongo, {
-    url: 'mongodb://admin:Abc123456@192.168.31.236:27017/blog-news?authSource=admin',
-    forceClose: true
-  });
 }
 
 module.exports.options = options
