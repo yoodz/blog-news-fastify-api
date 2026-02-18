@@ -14,9 +14,18 @@ module.exports = fp(async function (fastify, opts) {
     request.startTime = Date.now();
   });
 
+  // 不需要记录日志的路径列表
+  const excludePaths = ['/blogNewsApi/healthy', '/blogNewsApi/request-logs'];
+
   // 添加 onResponse hook 在响应发送后记录日志
   fastify.addHook('onResponse', async (request, reply) => {
     try {
+      // 跳过排除列表中的路径
+      const requestPath = request.routerPath || request.raw.url || '';
+      if (excludePaths.some(path => requestPath.startsWith(path))) {
+        return;
+      }
+
       // 计算响应时间（毫秒）
       const responseTime = request.startTime ? Date.now() - request.startTime : 0;
 
