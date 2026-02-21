@@ -17,6 +17,11 @@ module.exports = fp(async function (fastify, opts) {
   // 不需要记录日志的路径列表
   const excludePaths = ['/blogNewsApi/healthy', '/blogNewsApi/request-logs'];
 
+  // 捕获错误并存储到 request 对象上
+  fastify.addHook('onError', async (request, reply, error) => {
+    request.error = error;
+  });
+
   // 添加 onResponse hook 在响应发送后记录日志
   fastify.addHook('onResponse', async (request, reply) => {
     try {
@@ -74,6 +79,11 @@ module.exports = fp(async function (fastify, opts) {
         // 用户信息（如果有）
         userId: request.user?.userId || null,
         username: request.user?.username || null,
+        // 500错误时记录错误信息
+        ...(reply.statusCode === 500 && request.error && {
+          errorMessage: request.error.message,
+          errorStack: request.error.stack
+        })
       };
 
       // 异步写入日志，不阻塞响应
