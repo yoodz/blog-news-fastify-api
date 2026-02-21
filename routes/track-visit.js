@@ -30,7 +30,7 @@ module.exports = async function (fastify, opts) {
       const acceptLanguage = request.headers['accept-language'] || '';
 
       // 判断是否为爬虫（包括 axios、fetch、node 等非浏览器请求）
-      const botPatterns = /bot|crawler|spider|scraper|curl|wget|python|go-http|java|httpclient|axios|fetch|node/i;
+      const botPatterns = /bot|crawler|spider|scraper|curl|wget|python|go-http|java|httpclient|axios|fetch|node|headless/i;
       const isBot = botPatterns.test(userAgent);
 
       await logsCollection.insertOne({
