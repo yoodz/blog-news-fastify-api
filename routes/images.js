@@ -84,28 +84,29 @@ module.exports = async function (fastify, opts) {
         const image = sharp(fileBuffer);
         const metadata = await image.metadata();
 
+        // 根据 EXIF 自动旋转图片（修复图片颠倒问题）
+        let pipeline = image.rotate();
+
         // 如果图片宽度超过 1920px，进行缩放
         if (metadata.width && metadata.width > 1920) {
-          processedBuffer = await image
-            .resize(1920, null, {
-              withoutEnlargement: true,
-              fit: 'inside',
-            })
-            .toBuffer();
+          pipeline = pipeline.resize(1920, null, {
+            withoutEnlargement: true,
+            fit: 'inside',
+          });
         }
 
         // 对 JPEG/WebP 格式进行质量压缩
         if (fileInfo.mimetype.includes('jpeg') || fileInfo.mimetype.includes('jpg')) {
-          processedBuffer = await sharp(processedBuffer)
+          processedBuffer = await pipeline
             .jpeg({ quality: 92, progressive: true })
             .toBuffer();
         } else if (fileInfo.mimetype.includes('webp')) {
-          processedBuffer = await sharp(processedBuffer)
+          processedBuffer = await pipeline
             .webp({ quality: 92 })
             .toBuffer();
         } else if (fileInfo.mimetype.includes('png')) {
           // PNG 使用 adaptive quantization 进行压缩
-          processedBuffer = await sharp(processedBuffer)
+          processedBuffer = await pipeline
             .png({ compressionLevel: 9, adaptiveFiltering: true })
             .toBuffer();
         }
