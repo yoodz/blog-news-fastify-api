@@ -1,17 +1,45 @@
 // server.js
 'use strict'
+const pino = require('pino')
 const fastify = require('fastify')({
   bodyLimit: 50 * 1024 * 1024, // 50MB - 支持大文件上传
   logger: {
-    level: 'error',
+    level: 'info',
     transport: {
-      target: 'pino-pretty',
+      target: 'pino/file',
       options: {
-        colorize: true,
-        translateTime: 'yyyy-mm-dd HH:MM:ss.l', // 显示详细时间
-        ignore: 'pid', // 忽略不需要的字段
-        messageFormat: '[{time}] {msg}'
+        destination: 1
       }
+    },
+    formatters: {
+      level: (label) => {
+        return { level: label.toUpperCase() }
+      },
+      log: (object) => {
+        const { req, res, responseTime, ...rest } = object
+        let msg = rest.msg || ''
+        if (req) {
+          msg += ` ${req.method} ${req.url}`
+        }
+        if (res) {
+          msg += ` ${res.statusCode}`
+        }
+        if (responseTime) {
+          msg += ` ${responseTime}ms`
+        }
+        return { ...rest, msg }
+      }
+    },
+    serializers: {
+      req: () => undefined,
+      res: () => undefined,
+      err: pino.stdSerializers.err
+    },
+    timestamp: () => {
+      const now = new Date()
+      const offset = 8 * 60 // UTC+8 (东八区)
+      const localTime = new Date(now.getTime() + offset * 60000)
+      return localTime.toISOString().replace('T', ' ').replace('Z', '')
     }
   }
 })

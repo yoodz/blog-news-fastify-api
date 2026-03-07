@@ -8,8 +8,8 @@
   },
   "scripts": {
     "test": "node --test test/**/*.test.js",
-    "start": "fastify start -l info app.js",
-    "dev": "cross-env NODE_ENV=development fastify start -w -l info -P -p 3333 app.js"
+    "start": "node server.js",
+    "dev": "cross-env NODE_ENV=development PORT=3333 node server.js"
   },
   "keywords": [],
   "author": "",
