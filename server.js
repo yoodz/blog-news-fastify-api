@@ -17,13 +17,15 @@ const fastify = require('fastify')({
       log: (object) => {
         const { req, res, responseTime, err, ...rest } = object
         let msg = rest.msg || ''
+        let ip = '-'
+
         if (req) {
           // 获取真实 IP（优先从 headers 获取）
-          const ip = req.headers?.['x-forwarded-for']?.split(',')[0]?.trim()
+          ip = req.headers?.['x-forwarded-for']?.split(',')[0]?.trim()
             || req.headers?.['x-real-ip']
             || req.ip
             || '-'
-          msg += ` ${req.method} ${req.url} - ${ip}`
+          msg += ` ${req.method} ${req.url}`
         }
         if (res) {
           msg += ` ${res.statusCode}`
@@ -31,7 +33,7 @@ const fastify = require('fastify')({
         if (responseTime) {
           msg += ` ${responseTime}ms`
         }
-        const result = { ...rest, msg }
+        const result = { ...rest, msg, ip }
         if (err) {
           result.err = {
             type: err.type,
