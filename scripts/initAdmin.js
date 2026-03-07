@@ -11,7 +11,7 @@ const fastifyMongo = require('@fastify/mongodb');
 const { hashPassword } = require('../utils/auth');
 const dayjs = require('dayjs');
 
-const MONGODB_URL = 'mongodb://admin:Abc123456@192.168.31.236:27017/blog-news?authSource=admin';
+const MONGODB_URL = `mongodb://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`;
 
 async function initAdmin() {
   try {

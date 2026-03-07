@@ -61,8 +61,9 @@ module.exports = async function (app, opts) {
   });
 
   // 注册 MongoDB（必须在 plugins 之前，因为 requestLogger 需要）
+  const mongoUrl = `mongodb://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`;
   app.register(fastifyMongo, {
-    url: 'mongodb://admin:Abc123456@192.168.31.236:27017/blog-news?authSource=admin',
+    url: mongoUrl,
     forceClose: true
   });
 

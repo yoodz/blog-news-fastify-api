@@ -1,0 +1,27 @@
+services:
+  app:
+    image: registry.cn-shanghai.aliyuncs.com/reuben_home/blog-news-apis:latest
+    ports:
+      - "3000:3000"
+    dns:
+      - 8.8.8.8
+      - 114.114.114.114
+    environment:
+      # 直接传给 Fastify 的环境变量
+      - CLOUDFLARE_URL=https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/1127d4e5-ca37-4855-bfcb-ada9ae76c7df
+      - BARK=https://api.day.app/F8JC4vqJFfsNJNKL2tmhHV
+      # MongoDB 配置（线上环境）
+      - MONGODB_HOST=127.0.0.1
+      - MONGODB_PORT=27017
+      - MONGODB_USER=blognews
+      - MONGODB_PASSWORD=WJrERhPW4TZJLGtX
+      - MONGODB_DATABASE=blognews
+      # 请求日志配置
+      - REQUEST_LOG_RETENTION_DAYS=30
+      # 又拍云配置
+      - UPYUN_BUCKET=myblogsdrfg
+      - UPYUN_OPERATOR=developer
+      - UPYUN_PASSWORD=bipMShgTyShsKbepZQNsaxA4EAn968gM
+      - UPYUN_DOMAIN=https://upyun.afunny.top
+      - UPYUN_PROTOCOL=https
+    restart: always
