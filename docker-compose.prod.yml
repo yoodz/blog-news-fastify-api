@@ -1,8 +1,9 @@
 services:
   app:
     image: registry.cn-shanghai.aliyuncs.com/reuben_home/blog-news-apis:latest
-    ports:
-      - "3000:3000"
+    network_mode: host
+    # host 模式下端口直接暴露在宿主机，应用监听端口 3000
+    # 如需端口映射，请移除 network_mode: host 并启用下面的 ports 配置
     dns:
       - 8.8.8.8
       - 114.114.114.114
