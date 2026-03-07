@@ -1,6 +1,5 @@
 // server.js
 'use strict'
-const pino = require('pino')
 const fastify = require('fastify')({
   bodyLimit: 50 * 1024 * 1024, // 50MB - 支持大文件上传
   logger: {
@@ -16,7 +15,7 @@ const fastify = require('fastify')({
         return { level: label.toUpperCase() }
       },
       log: (object) => {
-        const { req, res, responseTime, ...rest } = object
+        const { req, res, responseTime, err, ...rest } = object
         let msg = rest.msg || ''
         if (req) {
           msg += ` ${req.method} ${req.url}`
@@ -27,13 +26,20 @@ const fastify = require('fastify')({
         if (responseTime) {
           msg += ` ${responseTime}ms`
         }
-        return { ...rest, msg }
+        const result = { ...rest, msg }
+        if (err) {
+          result.err = {
+            type: err.type,
+            message: err.message,
+            stack: err.stack
+          }
+        }
+        return result
       }
     },
     serializers: {
       req: () => undefined,
-      res: () => undefined,
-      err: pino.stdSerializers.err
+      res: () => undefined
     },
     timestamp: () => {
       const now = new Date()
