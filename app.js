@@ -28,11 +28,14 @@ module.exports = async function (app, opts) {
     timezone: "Asia/Shanghai"
   });
 
-  cron.schedule('0 6 * * *', async () => dailyVisitReport(app), {
-    scheduled: true,
-    named: 'dailyVisitReport',
-    timezone: "Asia/Shanghai"
-  });
+  // 仅在生产环境执行每日访问报告
+  if (process.env.NODE_ENV === 'production') {
+    cron.schedule('0 6 * * *', async () => dailyVisitReport(app), {
+      scheduled: true,
+      named: 'dailyVisitReport',
+      timezone: "Asia/Shanghai"
+    });
+  }
 
   // 每天凌晨2点清理旧请求日志
   cron.schedule('0 2 * * *', async () => cleanupRequestLogs(app), {
