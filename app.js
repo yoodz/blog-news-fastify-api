@@ -22,11 +22,11 @@ const options = {}
 module.exports = async function (app, opts) {
   // Place here your custom code!
   // Do not touch the following lines
-  cron.schedule('0 6 * * *', async () => rssUpdate(app), {
-    scheduled: true,
-    named: 'rssUpdate',
-    timezone: "Asia/Shanghai"
-  });
+  // cron.schedule('0 6 * * *', async () => rssUpdate(app), {
+  //   scheduled: true,
+  //   named: 'rssUpdate',
+  //   timezone: "Asia/Shanghai"
+  // });
 
   // 仅在生产环境执行每日访问报告
   if (process.env.NODE_ENV === 'production') {

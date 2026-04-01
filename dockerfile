@@ -2,7 +2,6 @@ FROM node:20-alpine AS runner
 
 ENV TZ=Asia/Shanghai
 
-ENV NODE_ENV=production
 WORKDIR /app
 
 # 安装 pnpm
