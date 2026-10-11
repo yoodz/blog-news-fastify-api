@@ -75,44 +75,81 @@ module.exports = async function (fastify, opts) {
         return reply.code(400).send({ error: '只支持 JPG、PNG、GIF、WebP 格式的图片' });
       }
 
+      const maxInputPixels = 40_000_000;
+      const maxDimension = 1920;
+      let sourceMetadata;
+      try {
+        sourceMetadata = await sharp(fileBuffer, { limitInputPixels: maxInputPixels }).metadata();
+      } catch (error) {
+        return reply.code(400).send({ error: '图片文件无效或无法解码' });
+      }
+
+      const mimeTypesByFormat = {
+        jpeg: ['image/jpeg', 'image/jpg'],
+        png: ['image/png'],
+        gif: ['image/gif'],
+        webp: ['image/webp'],
+      };
+      if (!mimeTypesByFormat[sourceMetadata.format]?.includes(fileInfo.mimetype)) {
+        return reply.code(400).send({ error: '文件内容与图片格式不匹配' });
+      }
+      if (!sourceMetadata.width || !sourceMetadata.height) {
+        return reply.code(400).send({ error: '无法读取图片尺寸' });
+      }
+      if (sourceMetadata.width * sourceMetadata.height > maxInputPixels) {
+        return reply.code(400).send({ error: '图片像素过高，请缩小后再上传' });
+      }
+
       // 生成文件名
       const filename = generateFilename(fileInfo.filename);
 
-      // 使用 sharp 进行图片压缩（在上传到又拍云之前）
+      // 在上传到又拍云之前规范尺寸并压缩；保留动画图片原样以避免丢失帧。
       let processedBuffer = fileBuffer;
-      try {
-        const image = sharp(fileBuffer);
-        const metadata = await image.metadata();
+      const requiresResize =
+        Math.max(sourceMetadata.width, sourceMetadata.height) > maxDimension;
+      const requiresOrientation = sourceMetadata.orientation && sourceMetadata.orientation !== 1;
+      const preserveAnimation = sourceMetadata.format === 'gif' || (sourceMetadata.pages || 1) > 1;
 
-        // 根据 EXIF 自动旋转图片（修复图片颠倒问题）
-        let pipeline = image.rotate();
+      if (!preserveAnimation) {
+        try {
+          let pipeline = sharp(fileBuffer, { limitInputPixels: maxInputPixels })
+            .rotate()
+            .resize({
+              width: maxDimension,
+              height: maxDimension,
+              fit: 'inside',
+              withoutEnlargement: true,
+            });
 
-        // 如果图片宽度超过 1920px，进行缩放
-        if (metadata.width && metadata.width > 1920) {
-          pipeline = pipeline.resize(1920, null, {
-            withoutEnlargement: true,
-            fit: 'inside',
-          });
+          if (sourceMetadata.format === 'jpeg') {
+            processedBuffer = await pipeline
+              .jpeg({ quality: 84, progressive: true, mozjpeg: true })
+              .toBuffer();
+          } else if (sourceMetadata.format === 'webp') {
+            processedBuffer = await pipeline
+              .webp({ quality: 82, effort: 4 })
+              .toBuffer();
+          } else if (sourceMetadata.format === 'png') {
+            processedBuffer = await pipeline
+              .png({ compressionLevel: 8, adaptiveFiltering: true })
+              .toBuffer();
+          }
+        } catch (error) {
+          fastify.log.warn('图片压缩失败:', error.message);
+          if (requiresResize || requiresOrientation) {
+            throw new Error('图片缩放或方向校正失败，无法安全保存');
+          }
+          processedBuffer = fileBuffer;
         }
 
-        // 对 JPEG/WebP 格式进行质量压缩
-        if (fileInfo.mimetype.includes('jpeg') || fileInfo.mimetype.includes('jpg')) {
-          processedBuffer = await pipeline
-            .jpeg({ quality: 92, progressive: true })
-            .toBuffer();
-        } else if (fileInfo.mimetype.includes('webp')) {
-          processedBuffer = await pipeline
-            .webp({ quality: 92 })
-            .toBuffer();
-        } else if (fileInfo.mimetype.includes('png')) {
-          // PNG 使用 adaptive quantization 进行压缩
-          processedBuffer = await pipeline
-            .png({ compressionLevel: 9, adaptiveFiltering: true })
-            .toBuffer();
+        // 小图重编码后若体积变大，保留原图；必要的缩放或方向校正仍优先完成。
+        if (
+          processedBuffer.length >= fileBuffer.length &&
+          !requiresResize &&
+          !requiresOrientation
+        ) {
+          processedBuffer = fileBuffer;
         }
-      } catch (error) {
-        fastify.log.warn('图片压缩失败，使用原始文件:', error.message);
-        processedBuffer = fileBuffer;
       }
 
       // 上传到又拍云（使用压缩后的 buffer）
