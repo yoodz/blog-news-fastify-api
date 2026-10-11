@@ -5,7 +5,7 @@ ENV TZ=Asia/Shanghai
 WORKDIR /app
 
 # 安装 pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.28.2 --activate
 
 # 先复制依赖清单，加速缓存
 COPY package.json pnpm-lock.yaml* ./

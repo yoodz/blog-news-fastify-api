@@ -1,6 +1,7 @@
 {
   "name": "blog-news-fastify-api",
   "version": "1.0.0",
+  "packageManager": "pnpm@10.28.2",
   "description": "This project was bootstrapped with Fastify-CLI.",
   "main": "app.js",
   "directories": {
